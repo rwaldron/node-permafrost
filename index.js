@@ -41,11 +41,16 @@ function load (db, def, cb) {
         
         if (rows.length == 0) root = def;
         
-console.dir({ root : root });
-        
         var em = new EventEmitter;
-        em.on('set', function (ps, value) {
-            console.log(ps.join('.') + ' = ' + value);
+        em.on('set', function set (ps, value) {
+            db.set(ps.join('.'), typeof value != 'object'
+                ? value
+                : Hash(value).map(function (k,v) {
+                    if (typeof v !== 'object') return v;
+                    set(ps.concat(k), v);
+                    return undefined;
+                })
+            );
         });
         
         cb(null, Wrapper(root, [], em));
@@ -70,7 +75,7 @@ function Wrapper (obj, path, em) {
             }
             else {
                 var ps = path.concat(name);
-                var res = (obj[name] = Persist(value, ps));
+                var res = (obj[name] = Wrapper(value, ps, em));
                 em.emit('set', ps, res);
                 return res;
             }
