@@ -47,7 +47,22 @@ function load (db, def, cb) {
         
         var em = new EventEmitter;
         em.on('set', function set (ps, value) {
-            db.set(ps.join('.'), value);
+            var key = ps.join('.');
+            if (typeof value != 'object') {
+                db.set(key, value);
+            }
+            else if (Array.isArray(value)) {
+                db.set(key, []);
+                value.forEach(function (x, i) {
+                    set(ps.concat(i), x);
+                });
+            }
+            else {
+                db.set(key, {});
+                Hash(value).forEach(function (x, k) {
+                    set(ps.concat(k), x);
+                });
+            }
         });
         
         if (rows.length == 0) {
