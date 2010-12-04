@@ -21,6 +21,13 @@ function load (db, def, cb) {
             rows.map(function (r) { return r.value })
         );
         
+        rows.forEach(function (row) {
+            if (row.key == '') return;
+            var pkey = row.key.split('.').slice(0,-1).join('.');
+            var key = row.key.split('.').slice(-1)[0];
+            keyed[pkey][key] = keyed[row.key];
+        });
+        
         var root = (function walk (ps) {
             var obj = keyed[ps.join('.')];
             if (typeof obj != 'object') return obj;
@@ -28,8 +35,7 @@ function load (db, def, cb) {
             var res = Array.isArray(obj) ? [] : {};
             Hash(obj).forEach(function (value, key) {
                 var ps_ = ps.concat(key);
-                var has = keyed.hasOwnProperty(ps_.join('.'));
-                if (value === undefined && has) {
+                if (keyed.hasOwnProperty(ps_.join('.'))) {
                     res[key] = walk(ps.concat(key));
                 }
                 else {
@@ -39,21 +45,17 @@ function load (db, def, cb) {
             return res;
         })([]);
         
-        if (rows.length == 0) root = def;
-        
         var em = new EventEmitter;
         em.on('set', function set (ps, value) {
-            db.set(ps.join('.'), typeof value != 'object'
-                ? value
-                : Hash(value).map(function (k,v) {
-                    if (typeof v !== 'object') return v;
-                    set(ps.concat(k), v);
-                    return undefined;
-                })
-            );
+            db.set(ps.join('.'), value);
         });
         
-        cb(null, Wrapper(root, [], em));
+        if (rows.length == 0) {
+            root = def;
+            em.emit('set', [], def);
+        }
+        var wrapped = Wrapper(root, [], em);
+        cb(null, wrapped);
     });
 }
 
@@ -76,7 +78,7 @@ function Wrapper (obj, path, em) {
             else {
                 var ps = path.concat(name);
                 var res = (obj[name] = Wrapper(value, ps, em));
-                em.emit('set', ps, res);
+                em.emit('set', ps, value);
                 return res;
             }
         },
