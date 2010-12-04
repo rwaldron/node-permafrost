@@ -36,7 +36,7 @@ function load (db, def, cb) {
             Hash(obj).forEach(function (value, key) {
                 var ps_ = ps.concat(key);
                 if (keyed.hasOwnProperty(ps_.join('.'))) {
-                    res[key] = walk(ps.concat(key));
+                    res[key] = walk(ps_);
                 }
                 else {
                     res[key] = value;
@@ -46,6 +46,7 @@ function load (db, def, cb) {
         })([]);
         
         var em = new EventEmitter;
+        
         em.on('set', function set (ps, value) {
             var key = ps.join('.');
             if (typeof value != 'object') {
@@ -65,7 +66,12 @@ function load (db, def, cb) {
             }
         });
         
-        if (rows.length == 0) {
+        em.on('delete', function rm (ps) {
+            var key = ps.join('.');
+            db.remove(key);
+        });
+        
+        if (rows.length === 0) {
             root = def;
             em.emit('set', [], def);
         }
@@ -77,32 +83,38 @@ function load (db, def, cb) {
 var Proxy = require('node-proxy');
 
 function Wrapper (obj, path, em) {
+console.dir(obj);
     if (typeof obj != 'object') return obj;
     
     return Proxy.create({
         get : function (recv, name) {
             var ps = path.concat(name);
-            return obj.hasOwnProperty(name)
-                ? Wrapper(obj[name], ps, em) : undefined
-            ;
+            if (!obj.hasOwnProperty(name)) return undefined;
+            return Wrapper(obj[name], ps, em);
         },
         set : function (recv, name, value) {
             if (typeof value === 'function') {
                 em.emit('error', new Error('Cannot persist functions'));
+                return;
             }
-            else {
-                var ps = path.concat(name);
-                var res = (obj[name] = Wrapper(value, ps, em));
+            
+            obj[name] = value;
+            
+            var ps = path.concat(name);
+            if (obj.propertyIsEnumerable(name)) {
                 em.emit('set', ps, value);
-                return res;
+                return Wrapper(value, ps, em);;
             }
+            else return value;
         },
         enumerate : function () {
             return Object.keys(obj);
         },
         delete : function (name) {
+            if (obj.propertyIsEnumerable(name)) {
+                em.emit('delete', path.concat(name));
+            }
             delete obj[name];
-            em.emit('delete', path.concat(name));
             return true;
         },
         fix : function () {
