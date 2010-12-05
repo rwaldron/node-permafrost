@@ -27,23 +27,7 @@ function load (db, def, cb) {
             var key = row.key.split('.').slice(-1)[0];
             keyed[pkey][key] = keyed[row.key];
         });
-        
-        var root = (function walk (ps) {
-            var obj = keyed[ps.join('.')];
-            if (typeof obj != 'object') return obj;
-            
-            var res = Array.isArray(obj) ? [] : {};
-            Hash(obj).forEach(function (value, key) {
-                var ps_ = ps.concat(key);
-                if (keyed.hasOwnProperty(ps_.join('.'))) {
-                    res[key] = walk(ps_);
-                }
-                else {
-                    res[key] = value;
-                }
-            });
-            return res;
-        })([]);
+        var root = keyed[''];
         
         var em = new EventEmitter;
         
@@ -75,26 +59,29 @@ function load (db, def, cb) {
             root = def;
             em.emit('set', [], def);
         }
-        var wrapped = Wrapper(root, [], em);
-        cb(null, wrapped);
+        
+        cb(null, Wrapper(root, [], em));
     });
 }
 
 var Proxy = require('node-proxy');
 
 function Wrapper (obj, path, em) {
-console.dir(obj);
     if (typeof obj != 'object') return obj;
     
     return Proxy.create({
         get : function (recv, name) {
             var ps = path.concat(name);
-            if (!obj.hasOwnProperty(name)) return undefined;
-            return Wrapper(obj[name], ps, em);
+            if (typeof obj[name] == 'function') {
+                return obj[name].bind(obj);
+            }
+            else {
+                return Wrapper(obj[name], ps, em);
+            }
         },
         set : function (recv, name, value) {
             if (typeof value === 'function') {
-                em.emit('error', new Error('Cannot persist functions'));
+                em.emit('error', new Error('Cannot set functions'));
                 return;
             }
             
