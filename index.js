@@ -44,6 +44,12 @@ pf.nstore = function (store, def, cb) {
     pf(db, def, cb);
 };
 
+var dirty = require('dirty');
+pf.dirty = function (store, def, cb) {
+    var db = typeof store === 'string' ? dirty(store) : store;
+    pf(db, def, cb);
+};
+
 var Hash = require('traverse/hash');
 var Traverse = require('traverse');
 var EventEmitter = require('events').EventEmitter;
@@ -95,7 +101,6 @@ function load (db, def, cb) {
         
         em.on('delete', function rm (ps, obj) {
             var key = ps.join('.');
-            
             var name = ps[ps.length - 1];
             db.remove(key);
             
