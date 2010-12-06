@@ -20,7 +20,8 @@
    ],
     "dependencies" : {
         "supermarket" : ">=1.1.10",
-        "traverse" : ">=0.2.3"
+        "traverse" : ">=0.2.3",
+        "node-proxy" : ">=0.3.2"
     },
     "license" : "MIT/X11",
     "engine" : ["node >=0.2.0"]
