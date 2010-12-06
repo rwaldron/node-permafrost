@@ -17,12 +17,13 @@ exports['set attrs'] = function (assert) {
             pf(filename, function (err, obj_) {
                 assert.eql(obj_, { a : 2, b : 3, c : [3,4] });
             });
-        }, 1000);
+        }, 500);
     });
 };
 
 exports.remove = function (assert) {
     var filename = tmpfile();
+    console.log(filename);
     
     pf(filename, {}, function (err, obj) {
         obj.a = 3;

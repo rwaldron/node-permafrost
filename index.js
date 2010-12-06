@@ -43,24 +43,34 @@ function load (db, def, cb) {
         em.on('set', function set (ps, value) {
             var key = ps.join('.');
             if (typeof value != 'object' || value === null) {
+                keyed[key] = value;
                 db.set(key, value);
             }
             else if (Array.isArray(value)) {
                 db.set(key, []);
+                keyed[key] = [];
                 value.forEach(function (x, i) {
-                    set(ps.concat(i), x);
+                    var ps_ = ps.concat(i);
+                    set(ps_, x);
+                    keyed[key][i] = keyed[ps_.join('.')];
                 });
             }
             else {
                 db.set(key, {});
+                keyed[key] = {};
                 Hash(value).forEach(function (x, k) {
-                    set(ps.concat(k), x);
+                    var ps_ = ps.concat(k);
+                    set(ps_, x);
+                    keyed[key][k] = keyed[ps_.join('.')];
                 });
             }
         });
         
         em.on('delete', function rm (ps) {
             var key = ps.join('.');
+            delete keyed[key];
+            var name = ps[ps.length - 1];
+            delete keyed[ps.slice(0,-1).join('.')][name];
             db.remove(key);
         });
         
