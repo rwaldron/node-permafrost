@@ -14,7 +14,17 @@ function Persist (db, def, cb) {
             else load(db, def, cb);
         });
     }
-    else load(db, def, cb);
+    else {
+        var missing = [ 'get', 'set', 'remove', 'all' ]
+            .filter(function (x) { return !db[x] })
+        ;
+        if (missing) {
+            cb('The store is missing: ' + missing.join(', '));
+        }
+        else {
+            load(db, def, cb);
+        }
+    }
     
     return self;
 }
@@ -36,6 +46,7 @@ function load (db, def, cb) {
                 return a.key.length - b.key.length
             })
             .forEach(function (row) {
+console.log('key = ' + row.key);
                 if (row.key == '') return;
                 var pkey = row.key.split('.').slice(0,-1).join('.');
                 var key = row.key.split('.').slice(-1)[0];
@@ -68,6 +79,7 @@ function load (db, def, cb) {
         em.on('delete', function rm (ps, obj) {
             var key = ps.join('.');
             var name = ps[ps.length - 1];
+console.log('delete ' + key);
             db.remove(key);
             
             if (Array.isArray(obj)) {

@@ -80,7 +80,7 @@ Get a handle to the top-layer object in the provided callback.
 If `db` is a string, a it's treated as the filename of a
 [supermarket](https://github.com/pkrumins/node-supermarket)
 database. Otherwise `db` is treated as a key/value store and is expected to have
-`.get()`, `.set()`, `.remove()`, and `.stream()`.
+`.get()`, `.set()`, `.remove()`, and `.all()`.
 
 If `def` is supplied and there is no existing data in the database, permafrost
 will return `def` to the inner callback instead.

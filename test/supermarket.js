@@ -5,8 +5,9 @@ function tmpfile () {
     return '/tmp/' + hash + '.db';
 }
 
-exports['set attrs'] = function (assert) {
+exports.attrs = function (assert) {
     var filename = tmpfile();
+    console.log(filename);
     
     pf(filename, { a : 1 }, function (err, obj) {
         assert.eql(obj.a, 1);
@@ -19,11 +20,12 @@ exports['set attrs'] = function (assert) {
         pf(filename, function (err, obj) {
             assert.eql(obj, { a : 2, b : 3, c : [3,4] });
         });
-    }, 5000);
+    }, 1000);
 };
 
 exports.remove = function (assert) {
     var filename = tmpfile();
+    console.log(filename);
     
     pf(filename, {}, function (err, obj) {
         obj.a = 3;
@@ -37,5 +39,5 @@ exports.remove = function (assert) {
         pf(filename, {}, function (err, obj) {
             assert.eql(obj, { a : 3, b : [4] });
         });
-    }, 10000);
+    }, 1000);
 };
