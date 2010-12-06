@@ -1,14 +1,12 @@
-module.exports = Persist;
+module.exports = pf;
 
 var Store = require('supermarket');
 
-function Persist (db, def, cb) {
+function pf (db, def, cb) {
     if (cb === undefined) { cb = def; def = {} }
     if (!def) def = {};
     
-    var self = {};
-    
-    if (typeof db == 'string') {
+    if (typeof db === 'string') {
         Store({ filename : db, json : true }, function (err, db) {
             if (err) cb(err)
             else load(db, def, cb);
@@ -25,9 +23,26 @@ function Persist (db, def, cb) {
             load(db, def, cb);
         }
     }
-    
-    return self;
 }
+
+var nstore = require('nStore');
+pf.nstore = function (store, def, cb) {
+    var db = typeof store === 'string'
+        ? nstore(store) : store;
+    db.set = db.save.bind(db);
+    db.all_ = db.all;
+    db.all = function (f) {
+        db.all_(function (err, values, keys) {
+            if (err) f(err)
+            else f(
+                err,
+                keys.slice(1).map(function (x) { return x.key }),
+                values.slice(1)
+            )
+        });
+    };
+    pf(db, def, cb);
+};
 
 var Hash = require('traverse/hash');
 var Traverse = require('traverse');
@@ -61,7 +76,7 @@ function load (db, def, cb) {
         em.on('set', function set (ps, value) {
             var key = ps.join('.');
             
-            if (typeof value != 'object' || value === null) {
+            if (typeof value !== 'object' || value === null) {
                 db.set(key, value);
             }
             else if (Array.isArray(value)) {
@@ -82,7 +97,6 @@ function load (db, def, cb) {
             var key = ps.join('.');
             
             var name = ps[ps.length - 1];
-console.log('delete ' + key);
             db.remove(key);
             
             if (Array.isArray(obj)) {
@@ -90,7 +104,7 @@ console.log('delete ' + key);
                     function (x,k) { rm(ps.concat(k), x) }
                 );
             }
-            else if (typeof obj == 'object') {
+            else if (typeof obj === 'object') {
                 Hash(obj).forEach(
                     function (x, k) { rm(ps.concat(k), x) }
                 );
@@ -109,7 +123,7 @@ console.log('delete ' + key);
 var Proxy = require('node-proxy');
 
 function Wrapper (obj, path, em) {
-    if (typeof obj != 'object' || obj === null) return obj;
+    if (typeof obj !== 'object' || obj === null) return obj;
     
     return Proxy.create({
         get : function (recv, name) {
@@ -117,7 +131,7 @@ function Wrapper (obj, path, em) {
             if (name === 'toString') {
                 return obj[name].bind(obj);
             }
-            if (typeof obj[name] == 'function') {
+            if (typeof obj[name] === 'function') {
                 var up = Wrapper(obj, ps.slice(0,-1), em);
                 return obj[name].bind(up);
             }

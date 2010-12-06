@@ -8,10 +8,8 @@ function tmpfile () {
 
 exports.attrs = function (assert) {
     var filename = tmpfile();
-    console.log(filename);
     
-    var db = nStore(filename);
-    pf(db, { a : 1 }, function (err, obj) {
+    pf.nstore(filename, { a : 1 }, function (err, obj) {
         if (err) assert.fail(err);
         assert.eql(obj.a, 1);
         obj.b = 3;
@@ -20,7 +18,7 @@ exports.attrs = function (assert) {
     });
     
     setTimeout(function () {
-        pf(db, function (err, obj) {
+        pf.nstore(filename, function (err, obj) {
             assert.eql(obj, { a : 2, b : 3, c : [3,4] });
         });
     }, 1000);
@@ -28,23 +26,20 @@ exports.attrs = function (assert) {
 
 exports.remove = function (assert) {
     var filename = tmpfile();
-    console.log(filename);
     
-    var db = nStore(filename, function () {
-        pf(filename, {}, function (err, obj) {
-            if (err) assert.fail(err);
-            
-            obj.a = 3;
-            obj.b = [ 4, 5 ];
-            obj.c = [ 6, 7, { d : 8, f : 9 } ];
-            delete obj.b[1];
-            delete obj.c;
-        });
+    pf.nstore(filename, {}, function (err, obj) {
+        if (err) assert.fail(err);
         
-        setTimeout(function () {
-            pf(filename, {}, function (err, obj) {
-                assert.eql(obj, { a : 3, b : [4] });
-            });
-        }, 1000);
+        obj.a = 3;
+        obj.b = [ 4, 5 ];
+        obj.c = [ 6, 7, { d : 8, f : 9 } ];
+        delete obj.b[1];
+        delete obj.c;
     });
+    
+    setTimeout(function () {
+        pf.nstore(filename, {}, function (err, obj) {
+            assert.eql(obj, { a : 3, b : [4] });
+        });
+    }, 1000);
 };
