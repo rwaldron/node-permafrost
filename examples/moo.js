@@ -1,8 +1,6 @@
 var pf = require('permafrost');
 
-pf('moo.db', function (err, moo) {
-    if (!moo) moo = { times : 0 };
-    
+pf('moo.db', { times : 0 }, function (err, moo) {
     moo.times ++;
     console.log(moo.times + ' times');
     

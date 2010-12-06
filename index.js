@@ -3,7 +3,8 @@ module.exports = Persist;
 var Store = require('supermarket');
 
 function Persist (db, def, cb) {
-    if (cb === undefined) { cb = def; def = undefined }
+    if (cb === undefined) { cb = def; def = {} }
+    if (!def) def = {};
     
     var self = {};
     
@@ -41,7 +42,7 @@ function load (db, def, cb) {
         
         em.on('set', function set (ps, value) {
             var key = ps.join('.');
-            if (typeof value != 'object') {
+            if (typeof value != 'object' || value === null) {
                 db.set(key, value);
             }
             else if (Array.isArray(value)) {
@@ -75,7 +76,7 @@ function load (db, def, cb) {
 var Proxy = require('node-proxy');
 
 function Wrapper (obj, path, em) {
-    if (typeof obj != 'object') return obj;
+    if (typeof obj != 'object' || obj === null) return obj;
     
     return Proxy.create({
         get : function (recv, name) {
