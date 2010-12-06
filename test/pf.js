@@ -13,17 +13,17 @@ exports['set attrs'] = function (assert) {
         obj.b = 3;
         obj.a ++;
         obj.c = [3,4];
-        setTimeout(function () {
-            pf(filename, function (err, obj_) {
-                assert.eql(obj_, { a : 2, b : 3, c : [3,4] });
-            });
-        }, 500);
     });
+    
+    setTimeout(function () {
+        pf(filename, function (err, obj) {
+            assert.eql(obj, { a : 2, b : 3, c : [3,4] });
+        });
+    }, 5000);
 };
 
 exports.remove = function (assert) {
     var filename = tmpfile();
-    console.log(filename);
     
     pf(filename, {}, function (err, obj) {
         obj.a = 3;
@@ -31,12 +31,11 @@ exports.remove = function (assert) {
         obj.c = [ 6, 7, { d : 8, f : 9 } ];
         delete obj.b[1];
         delete obj.c;
-        
-        setTimeout(function () {
-            pf(filename, {}, function (err, obj_) {
-                assert.eql(obj_, { a : 3, b : [4] });
-            });
-        }, 500);
     });
     
+    setTimeout(function () {
+        pf(filename, {}, function (err, obj) {
+            assert.eql(obj, { a : 3, b : [4] });
+        });
+    }, 10000);
 };

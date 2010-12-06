@@ -30,12 +30,18 @@ function load (db, def, cb) {
             rows.map(function (r) { return r.value })
         );
         
-        rows.forEach(function (row) {
-            if (row.key == '') return;
-            var pkey = row.key.split('.').slice(0,-1).join('.');
-            var key = row.key.split('.').slice(-1)[0];
-            keyed[pkey][key] = keyed[row.key];
-        });
+        rows
+            .sort(function (a,b) {
+                // so that children don't get set before their parents
+                return a.key.length - b.key.length
+            })
+            .forEach(function (row) {
+                if (row.key == '') return;
+                var pkey = row.key.split('.').slice(0,-1).join('.');
+                var key = row.key.split('.').slice(-1)[0];
+                keyed[pkey][key] = keyed[row.key];
+            })
+        ;
         var root = keyed[''];
         
         var em = new EventEmitter;
@@ -43,35 +49,37 @@ function load (db, def, cb) {
         em.on('set', function set (ps, value) {
             var key = ps.join('.');
             if (typeof value != 'object' || value === null) {
-                keyed[key] = value;
                 db.set(key, value);
             }
             else if (Array.isArray(value)) {
                 db.set(key, []);
-                keyed[key] = [];
                 value.forEach(function (x, i) {
-                    var ps_ = ps.concat(i);
-                    set(ps_, x);
-                    keyed[key][i] = keyed[ps_.join('.')];
+                    set(ps.concat(i), x);
                 });
             }
             else {
                 db.set(key, {});
-                keyed[key] = {};
                 Hash(value).forEach(function (x, k) {
-                    var ps_ = ps.concat(k);
-                    set(ps_, x);
-                    keyed[key][k] = keyed[ps_.join('.')];
+                    set(ps.concat(k), x);
                 });
             }
         });
         
-        em.on('delete', function rm (ps) {
+        em.on('delete', function rm (ps, obj) {
             var key = ps.join('.');
-            delete keyed[key];
             var name = ps[ps.length - 1];
-            delete keyed[ps.slice(0,-1).join('.')][name];
             db.remove(key);
+            
+            if (Array.isArray(obj)) {
+                obj.forEach(
+                    function (x,k) { rm(ps.concat(k), x) }
+                );
+            }
+            else if (typeof obj == 'object') {
+                Hash(obj).forEach(
+                    function (x, k) { rm(ps.concat(k), x) }
+                );
+            }
         });
         
         if (rows.length === 0) {
@@ -122,7 +130,7 @@ function Wrapper (obj, path, em) {
         },
         delete : function (name) {
             if (obj.propertyIsEnumerable(name)) {
-                em.emit('delete', path.concat(name));
+                em.emit('delete', path.concat(name), obj[name]);
             }
             delete obj[name];
             return true;
