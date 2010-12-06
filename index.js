@@ -82,7 +82,8 @@ function Wrapper (obj, path, em) {
         get : function (recv, name) {
             var ps = path.concat(name);
             if (typeof obj[name] == 'function') {
-                return obj[name].bind(obj);
+                var up = Wrapper(obj, ps.slice(0,-1), em);
+                return obj[name].bind(up);
             }
             else {
                 return Wrapper(obj[name], ps, em);
