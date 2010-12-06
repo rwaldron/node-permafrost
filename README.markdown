@@ -7,6 +7,8 @@ programming model.
 
 Think ORM, but with a crazy low impedance mismatch.
 
+This thing is still quite buggy. I wouldn't use it for anything important yet.
+
 Examples
 ========
 
