@@ -34,23 +34,22 @@ var Traverse = require('traverse');
 var EventEmitter = require('events').EventEmitter;
 
 function load (db, def, cb) {
-    db.join(function (rows) {
-        var keyed = Hash.zip(
-            rows.map(function (r) { return r.key }),
-            rows.map(function (r) { return r.value })
-        );
+    db.all(function (err, keys, values) {
+        if (err) { cb(err); return }
         
-        rows
+        var keyed = Hash.zip(keys, values);
+        
+        keys
             .sort(function (a,b) {
                 // so that children don't get set before their parents
-                return a.key.length - b.key.length
+                return a.length - b.length
             })
-            .forEach(function (row) {
-console.log('key = ' + row.key);
-                if (row.key == '') return;
-                var pkey = row.key.split('.').slice(0,-1).join('.');
-                var key = row.key.split('.').slice(-1)[0];
-                keyed[pkey][key] = keyed[row.key];
+            .forEach(function (key) {
+console.log('key = ' + key);
+                if (key == '') return;
+                var pkey = key.split('.').slice(0,-1).join('.');
+                var name = key.split('.').slice(-1)[0];
+                keyed[pkey][name] = keyed[key];
             })
         ;
         var root = keyed[''];
@@ -94,7 +93,7 @@ console.log('delete ' + key);
             }
         });
         
-        if (rows.length === 0) {
+        if (keys.length === 0) {
             root = def;
             em.emit('set', [], def);
         }
