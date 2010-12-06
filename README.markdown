@@ -51,6 +51,9 @@ Then run it repeatedly:
 
 Super great. You can modify nested references too:
 
+moo.js
+------
+
     var pf = require('permafrost');
     
     pf('moo.db', {}, function (err, moo) {
