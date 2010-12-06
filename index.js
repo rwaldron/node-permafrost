@@ -81,6 +81,9 @@ function Wrapper (obj, path, em) {
     return Proxy.create({
         get : function (recv, name) {
             var ps = path.concat(name);
+            if (name === 'toString') {
+                return obj[name].bind(obj);
+            }
             if (typeof obj[name] == 'function') {
                 var up = Wrapper(obj, ps.slice(0,-1), em);
                 return obj[name].bind(up);
