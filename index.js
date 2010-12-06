@@ -2,12 +2,20 @@ module.exports = Persist;
 
 var Store = require('supermarket');
 
-function Persist (filename, def, cb) {
-    if (cb === undefined) { cb = def; def = {} }
-    Store({ filename : filename, json : true }, function (err, db) {
-        if (err) cb(err)
-        else load(db, def, cb);
-    });
+function Persist (db, def, cb) {
+    if (cb === undefined) { cb = def; def = undefined }
+    
+    var self = {};
+    
+    if (typeof db == 'string') {
+        Store({ filename : db, json : true }, function (err, db) {
+            if (err) cb(err)
+            else load(db, def, cb);
+        });
+    }
+    else load(db, def, cb);
+    
+    return self;
 }
 
 var Hash = require('traverse/hash');

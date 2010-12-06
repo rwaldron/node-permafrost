@@ -1,0 +1,18 @@
+{
+    "name" : "permafrost",
+    "version" : "0.0.1",
+    "description" : "Transparent object persistence with a key/value store",
+    "modules" : {
+        "index" : "./index.js",
+    },
+    "repository" : {
+        "type" : "git",
+        "url" : "http://github.com/substack/node-persist.git"
+    },
+    "dependencies" : {
+        "supermarket" : ">=1.1.10",
+        "traverse" : ">=0.2.3"
+    },
+    "license" : "MIT/X11",
+    "engine" : ["node >=0.2.0"]
+}
