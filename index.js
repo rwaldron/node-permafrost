@@ -18,7 +18,7 @@ function Persist (db, def, cb) {
         var missing = [ 'get', 'set', 'remove', 'all' ]
             .filter(function (x) { return !db[x] })
         ;
-        if (missing) {
+        if (missing.length) {
             cb('The store is missing: ' + missing.join(', '));
         }
         else {
@@ -38,6 +38,7 @@ function load (db, def, cb) {
         if (err) { cb(err); return }
         
         var keyed = Hash.zip(keys, values);
+        keyed[''] = {};
         
         keys
             .sort(function (a,b) {
@@ -45,8 +46,7 @@ function load (db, def, cb) {
                 return a.length - b.length
             })
             .forEach(function (key) {
-console.log('key = ' + key);
-                if (key == '') return;
+                if (key === '') return;
                 var pkey = key.split('.').slice(0,-1).join('.');
                 var name = key.split('.').slice(-1)[0];
                 keyed[pkey][name] = keyed[key];
@@ -58,6 +58,7 @@ console.log('key = ' + key);
         
         em.on('set', function set (ps, value) {
             var key = ps.join('.');
+            
             if (typeof value != 'object' || value === null) {
                 db.set(key, value);
             }
@@ -77,6 +78,7 @@ console.log('key = ' + key);
         
         em.on('delete', function rm (ps, obj) {
             var key = ps.join('.');
+            
             var name = ps[ps.length - 1];
 console.log('delete ' + key);
             db.remove(key);
