@@ -67,6 +67,27 @@ moo.js
 Which prints:
     { xs: [ 3, 4, 5, 6, { a: 1, b: 2, c: [Object] } ] }
 
+Methods
+=======
+
+pf(db, cb)
+----------
+pf(db, def, cb)
+---------------
+
+Get a handle to the top-layer object in the provided callback.
+
+If `db` is a string, a it's treated as the filename of a
+[supermarket](https://github.com/pkrumins/node-supermarket)
+database. Otherwise `db` is treated as a key/value store and is expected to have
+`.get()`, `.set()`, `.remove()`, and `.stream()`.
+
+If `def` is supplied and there is no existing data in the database, permafrost
+will return `def` to the inner callback instead.
+
+When the data store is ready, `cb(err, obj)` is called with the wrapped object
+or an error message. The data store is updated immediately when `obj` changes.
+
 Installation
 ============
 
@@ -76,3 +97,18 @@ With [npm](http://github.com/isaacs/npm), just do:
 or clone this project on github:
 
     git clone http://github.com/substack/node-permafrost.git
+
+To run the tests with [expresso](http://github.com/visionmedia/expresso),
+just do:
+
+    expresso
+
+Dependencies
+------------
+
+* [node-proxy](https://github.com/brickysam26/node-proxy)
+* [supermarket](https://github.com/pkrumins/node-supermarket)
+* [traverse](https://github.com/pkrumins/node-supermarket)
+
+When you `npm install permafrost` these dependencies will be automatically
+installed.
