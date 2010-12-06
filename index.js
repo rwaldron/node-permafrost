@@ -38,7 +38,9 @@ function load (db, def, cb) {
         if (err) { cb(err); return }
         
         var keyed = Hash.zip(keys, values);
-        keyed[''] = {};
+        if (keyed[''] === undefined) {
+            keyed[''] = Array.isArray(def) ? [] : {};
+        }
         
         keys
             .sort(function (a,b) {
