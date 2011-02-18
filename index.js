@@ -50,8 +50,7 @@ pf.dirty = function (store, def, cb) {
     pf(db, def, cb);
 };
 
-var Hash = require('traverse/hash');
-var Traverse = require('traverse');
+var Hash = require('hashish');
 var EventEmitter = require('events').EventEmitter;
 
 function load (db, def, cb) {
