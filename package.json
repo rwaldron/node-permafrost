@@ -1,11 +1,11 @@
 {
     "name" : "permafrost",
-    "version" : "0.0.2",
+    "version" : "0.0.3",
     "description" : "Transparent object persistence on top of key/value stores",
     "main" : "./index.js",
     "repository" : {
         "type" : "git",
-        "url" : "http://github.com/substack/node-persist.git"
+        "url" : "http://github.com/substack/node-permafrost.git"
     },
    "keywords": [
        "data",
