@@ -21,6 +21,9 @@
         "hashish" : ">=0.0.2",
         "node-proxy" : ">=0.3.2"
     },
+    "devDependencies" : {
+        "nStore" : ">=0.2.1"
+    },
     "license" : "MIT/X11",
     "engine" : ["node >=0.2.0"]
 }
