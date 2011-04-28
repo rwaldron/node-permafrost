@@ -1,8 +1,13 @@
 {
     "name" : "permafrost",
-    "version" : "0.0.3",
+    "version" : "0.0.4",
     "description" : "Transparent object persistence on top of key/value stores",
     "main" : "./index.js",
+    "author" : {
+        "name" : "James Halliday",
+        "email" : "mail@substack.net",
+        "url" : "http://substack.net"
+    },
     "repository" : {
         "type" : "git",
         "url" : "http://github.com/substack/node-permafrost.git"
